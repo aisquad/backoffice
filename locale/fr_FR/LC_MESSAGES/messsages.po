@@ -1,0 +1,25 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: MonProjet 1.0\n"
+"POT-Creation-Date: 2025-02-17 21:50+0100\n"
+"PO-Revision-Date: 2025-02-17 21:50+0100\n"
+"Last-Translator: Vlad Znig <vlad@znig.fr>\n"
+"Language-Team: Français <fr@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "HELLO"
+msgstr "Bonjour"
+
+msgctxt "Greeting"
+msgid "WELCOME"
+msgstr "Bienvenue"
+
+msgid "FILE"
+msgid_plural "FILES"
+msgstr[0] "fichier"
+msgstr[1] "fichiers"
+
+msgid "THANK_YOU_4_UR_PURCH"
+msgstr "Merci pour votre achat"

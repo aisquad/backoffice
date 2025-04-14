@@ -1,0 +1,40 @@
+﻿<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Redirection HTTP -> HTTPS
+    RewriteCond %{HTTPS} off
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Blocage des accès directs aux dossiers sensibles
+    RewriteRule ^(src|config|logs|vendor|includes) - [F,L,NC]
+
+    # Contournement spécial pour le dossier icons
+    RewriteRule ^icons/(.*) /index.php?route=icons/$1 [L,QSA]
+
+    # Configuration API
+    RewriteCond %{REQUEST_URI} ^/api/ [NC]
+    RewriteRule ^api/(.*)$ api/service.php?endpoint=$1 [QSA,L]
+
+    # Routage principal
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php?route=$1 [QSA,L]
+</IfModule>
+
+# Headers de sécurité
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Content-Security-Policy "default-src 'self' https: 'unsafe-inline' 'unsafe-eval';"
+</IfModule>
+
+# Cache et protection
+<FilesMatch "\.(css|js|png|jpg|jpeg|gif|ico|woff2)$">
+    Header set Cache-Control "max-age=31536000, public"
+</FilesMatch>
+
+<FilesMatch "\.(env|ini|bak)$">
+    Require all denied
+</FilesMatch>
+
+Options -Indexes

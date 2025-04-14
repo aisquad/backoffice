@@ -1,0 +1,71 @@
+﻿RewriteEngine On
+RewriteBase /
+
+# ---------------------------------------------------------------
+# Sécurité API (à placer EN PREMIER)
+# ---------------------------------------------------------------
+# Bloque l'accès direct à l'API sans header X-Requested-With
+RewriteCond %{REQUEST_URI} ^/api/ [NC]
+RewriteCond %{HTTP:X-Requested-With} !^XMLHttpRequest$ [NC]
+RewriteRule ^api/ - [F,L]
+# Blocage des requêtes non-CORS (nécessite Apache 2.4+)
+RewriteCond %{HTTP:Sec-Fetch-Mode} !^(cors|navigate)$ [NC]
+RewriteRule ^api/ - [F]
+
+# Routing API
+RewriteCond %{REQUEST_URI} ^/api/ [NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^api/(.*)$ api/service.php [QSA,L]
+
+# ---------------------------------------------------------------
+# Règles Frontend
+# ---------------------------------------------------------------
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# ---------------------------------------------------------------
+# Sécurité renforcée
+# ---------------------------------------------------------------
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+</IfModule>
+
+<FilesMatch "\.(env|log|htaccess|htpasswd|ini|phps|fla|psd|bat|sh)$">
+    Require all denied
+</FilesMatch>
+
+# Protection contre les injections SQL basiques
+RewriteCond %{QUERY_STRING} \b(declare|char|set|cast|convert|delete|drop|exec|insert|truncate|update)\b [NC]
+RewriteRule .* - [F]
+
+
+# ----------------------------------------------------------------------------------------------
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Redirection HTTP -> HTTPS
+    RewriteCond %{HTTPS} off
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+    
+    # Blocage des accès directs aux dossiers internes
+    RewriteRule ^(src|config|logs|vendor) - [F,L]
+    
+    # Réécriture SEO-friendly (masque public/Views/)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php?route=$1 [QSA,L]
+</IfModule>
+
+# Cache et sécurité
+<FilesMatch "\.(css|js|png|jpg|jpeg|gif|ico|woff2)$">
+    Header set Cache-Control "max-age=31536000, public"
+</FilesMatch>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+</IfModule>

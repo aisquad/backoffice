@@ -1,0 +1,18 @@
+<script type="module">
+    import { StorageManager } from "/assets/js/storage/storage.manager.js"
+    import { ConnectionTimeTracker } from '/assets/js/timers/connection.time.tracker.js'
+
+    const storage = new StorageManager()
+
+    $(document).ready(()=>{
+        const storage = new StorageManager()
+        const loggedInAtInSec = storage.getLocalData('loggedInAt')
+        const connectionTime = new ConnectionTimeTracker(loggedInAtInSec)
+        connectionTime.startUpdating('#connection-time')
+        console.info("connection time", connectionTime)
+
+        $("#signout-link").on('click', () => {
+            storage.clearAllLocalData()
+        })
+    })
+</script>

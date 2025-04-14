@@ -1,0 +1,56 @@
+﻿<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # 1. Redirection HTTP -> HTTPS
+    RewriteCond %{HTTPS} off
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # 2. Blocage des accès directs aux dossiers sensibles
+    RewriteRule ^(src|config|logs|vendor|\.museum) - [F,L,NC]
+
+    # 3. Configuration spécifique pour l'API
+    RewriteCond %{REQUEST_URI} ^/api/ [NC]
+    RewriteRule ^api/(.*)$ api/service.php?endpoint=$1 [QSA,L]
+
+    # 4. Protection des fichiers .php de l'API
+    <Files "service.php">
+        # Limitation du débit (si mod_ratelimit activé)
+        <IfModule mod_ratelimit.c>
+            BandWidth 50000
+            MaxConn 100
+        </IfModule>
+
+        # Headers de sécurité API
+        <IfModule mod_headers.c>
+            Header set Content-Type "application/json"
+            Header set X-API-Version "2.0"
+            Header set Access-Control-Allow-Origin "*"
+            Header set X-Content-Type-Options "nosniff"
+        </IfModule>
+    </Files>
+
+    # 5. Routage SEO-friendly pour le frontend
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php?route=/$1 [QSA,L]
+</IfModule>
+
+# 6. Configuration du cache pour les assets
+<FilesMatch "\.(css|js|png|jpg|jpeg|gif|ico|woff2)$">
+    Header set Cache-Control "max-age=31536000, public"
+</FilesMatch>
+
+# 7. Headers de sécurité globaux
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    Header always set Content-Security-Policy "default-src 'self' https: 'unsafe-inline' 'unsafe-eval';"
+</IfModule>
+
+# 8. Désactivation de l'indexation des répertoires
+Options -Indexes
+
+# 9. Protection contre l'accès direct aux fichiers .env
+<FilesMatch "\.(env|ini|bak)$">
+    Require all denied
+</FilesMatch>
